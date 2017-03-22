@@ -1,0 +1,71 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="search-list">
+  <template>
+    <style>
+      :host {
+
+      }
+
+      img {
+        padding: 20px 20px 20px 0;
+        height: 80px;
+        width: 80px;
+      }
+
+      .addToList:hover > paper-icon-button {
+        display: block;
+      }
+
+      .addToList > paper-icon-button {
+        position: absolute;
+        top: 10px;
+        left: 5px;
+        margin: 10px;
+        height: 80px;
+        width: 80px;
+        background-color: rgba(0, 0, 0, 0.5);
+        display: none;
+        color: white;
+      }
+    </style>
+
+
+    <template is="dom-if" if="[[loading]]">
+      <paper-spinner active></paper-spinner>
+    </template>
+
+    <template id="results" is="dom-repeat" items="{{searchResults}}" as="result">
+      <paper-item>
+        <div item-icon class="addToList">
+          <img src="[[result.artworkUrl100]]">
+          <paper-icon-button icon="icons:add-circle-outline" on-tap="addToList"></paper-icon-button>
+        </div>
+        <paper-item-body two-line>
+          <div>[[result.trackName]]</div>
+          <div secondary>[[result.artistName]] ([[result.collectionName]])</div>
+        </paper-item-body>
+      </paper-item>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'search-list',
+      properties: {
+        searchResults: {
+          type: Array
+        }
+
+      },
+      ready: function () {
+
+      },
+      addToList: function (event) {
+        var element = event.target;
+        var item = this.$.results.itemForElement(element);
+        this.fire('add-to-list', item);
+      }
+    })
+    ;
+  </script>
+</dom-module>

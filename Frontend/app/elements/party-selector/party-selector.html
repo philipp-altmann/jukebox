@@ -1,0 +1,72 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="party-selector">
+  <template>
+    <style>
+      :host {
+      }
+    </style>
+    <!--Dropdown Menu \w parties-->
+    <!--Domif Admin -> add button-->
+    <!--Default: Latest Partys-->
+
+    <!--FireBase Request Fetching all Parties-->
+    <firebase-query
+      id="party"
+      path="/parties"
+      data="{{parties}}"
+      on-data-changed="dataChanged"
+      order-by-child="date">
+    </firebase-query>
+
+    <paper-listbox class="dropdown-content" selected="1">
+      <paper-item>allosaurus</paper-item>
+      <paper-item>brontosaurus</paper-item>
+      <paper-item>carcharodontosaurus</paper-item>
+      <paper-item>diplodocus</paper-item>
+    </paper-listbox>
+    <paper-dropdown-menu label="Parties" selected="0">
+      <paper-listbox id="dropdown" class="dropdown-content" attr-for-selected="partyid" selected="{{selectedParty}}" on-iron-items-changed="itemsChanged">
+        <template is="dom-repeat" items="[[parties]]" as="party">
+          <paper-item partyid$="[[party.$key]]">[[party.name]]</paper-item>
+        </template>
+      </paper-listbox>
+    </paper-dropdown-menu>
+  </template>
+  <script>
+    Polymer({
+      is: 'party-selector',
+      properties: {
+        selectedPartyId: {
+          type: String
+        },
+        parties: {
+          type: Object,
+          observer: 'partiesChanged'
+        },
+        selectedParty: {
+          type: Object,
+          observer: 'selectionChanged'
+        }
+      },
+      ready: function () {
+
+      },
+      selectionChanged: function (partyId) {
+        this.set('selectedPartyId', partyId);
+        console.log(this.selectedPartyId);
+        this.fire('SELECTED_PARTY_CHANGED', partyId)
+      },
+      dataChanged: function (event) {
+        console.log(this.$.dropdown.items);
+
+      },
+      itemsChanged: function (event) {
+        var last = event.detail.addedNodes.length/3 -1;
+        if (this.selectedPartyId === undefined) {
+          this.$.dropdown.selectIndex(0);
+        }
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,69 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="main-view">
+  <template>
+    <style>
+      :host {
+      }
+    </style>
+
+
+    <!--paper-material elevation="1">
+      <current-list track-list="{{trackList}}"></current-list>
+    </paper-material-->
+
+    <!--firebase-auth
+      id="auth"
+      user="{{user}}"
+      provider="google"
+      on-error="handleError">
+    </firebase-auth>
+
+    <template is="dom-if" if="[[user]]">
+      <h1>Welcome [[user.displayName]]</h1>
+    </template>
+
+    <paper-button raised on-tap="login" hidden$="[[user]]">Sign in</paper-button>
+    <paper-button raised on-tap="logout" hidden$="[[!user]]">Sign out</paper-button-->
+
+
+    <firebase-query
+      id="query"
+      path="/parties"
+      data="{{parties}}">
+    </firebase-query>
+
+    <paper-button on-tap="testPush">Test Push</paper-button>
+
+    <template is="dom-repeat" items="{{data}}" as="data">
+      <h1>[[data.info.name]]</h1>
+      <h1>[[data.info.artist]]</h1>
+      <img src="[[data.info.cover]]">
+    </template>
+
+
+  </template>
+  <script>
+    Polymer({
+      is: 'main-view',
+      properties: {
+        parties: {
+          type: Object,
+          observer: 'partiesChanged'
+        },
+        user: {
+            type: Object,
+          observer: 'userChanged'
+        }
+
+      },
+      userChanged: function (user) {
+        console.log(user);
+      },
+
+      ready: function () {
+
+      }
+    });
+  </script>
+</dom-module>

@@ -1,0 +1,64 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+<link rel="import" href="../../bower_components/polymerfire/firebase-auth.html">
+<link rel="import" href="../../bower_components/paper-button/paper-button.html">
+
+<dom-module id="login-element">
+    <template>
+        <style>
+            :host{
+            }
+        </style>
+        <div></div>
+
+      <firebase-auth
+        id="auth"
+        user="{{user}}"
+        on-error="handleError">
+      </firebase-auth>
+
+      <template is="dom-if" if="[[user]]">
+        <h1>Welcome [[user.displayName]]</h1>
+      </template>
+
+      <paper-input value="{{mail}}" label="EMail"></paper-input>
+      <paper-input value="{{password}}" label="Password" type="password"></paper-input>
+
+      <paper-button raised on-tap="anonimousSignIn" hidden$="[[user]]">Sign in as a party guest</paper-button>
+      <paper-button raised on-tap="login" hidden$="[[user]]">Sign in as a party host</paper-button>
+      <paper-button raised on-tap="logout" hidden$="[[!user]]">Sign out</paper-button>
+
+    </template>
+    <script>
+        Polymer({
+            is: 'login-element',
+            properties: {
+                user: {
+                    type: Object,
+                  notify: true
+                },
+                statusKnown: {
+                    type: Object
+                }
+            },
+            ready: function() {
+
+            },
+
+            login: function () {
+              console.log(this.$.auth.signInWithEmailAndPassword(this.mail, this.password));
+
+            },
+
+            logout: function () {
+              return this.$.auth.signOut();
+            },
+          anonimousSignIn: function () {
+            console.log(this.$.auth.signInAnonymously());
+          },
+
+          handleError: function (event) {
+            console.log(event);
+          }
+        });
+    </script>
+</dom-module>

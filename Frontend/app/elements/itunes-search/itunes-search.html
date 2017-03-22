@@ -1,0 +1,72 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="itunes-search">
+  <template>
+    <style>
+      :host {
+      }
+      paper-spinner{
+        height: 24px;
+        width: 24px;
+      }
+
+    </style>
+    <div></div>
+    <iron-ajax
+      id="ajax"
+      auto
+      url="https://itunes.apple.com/search?term={{term}}&country=DE"
+      handle-as="json"
+      on-response="handleResponse"
+      last-response="{{lastResponse}}"
+      debounce-duration="300"
+      loading="{{loading}}"></iron-ajax>
+    <paper-input label="Search iTunes" value="{{term}}">
+      <template is="dom-if" if="[[loading]]">
+        <paper-spinner active suffix></paper-spinner>
+      </template>
+
+    </paper-input>
+
+    <!--template id="results" is="dom-repeat" items="[[lastResponse.results]]" as="result">
+      <paper-item>
+        <div item-icon class="addToList">
+          <img src="[[result.artworkUrl100]]">
+          <paper-icon-button icon="icons:add-circle-outline" on-tap="addToList"></paper-icon-button>
+        </div>
+        <paper-item-body two-line>
+          <div>[[result.trackName]]</div>
+          <div secondary>[[result.artistName]] ([[result.collectionName]])</div>
+        </paper-item-body>
+      </paper-item>
+    </template-->
+  </template>
+  <script>
+    Polymer({
+      is: 'itunes-search',
+      properties: {
+        lastResponse: {
+          type: Object
+        },
+        user: {
+          type: Object
+        },
+        loading: {
+          type: Boolean,
+          notify: true
+        }
+
+      },
+      trackListChanged: function (trackList) {
+        console.log(trackList);
+      },
+      ready: function () {
+      },
+      handleResponse: function (event) {
+        this.fire('received-results', this.lastResponse);
+        console.log(event.detail);
+        console.log(this.lastResponse);
+      }
+    });
+  </script>
+</dom-module>

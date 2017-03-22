@@ -1,0 +1,12 @@
+{
+  "rules": {
+    "parties": {
+      ".read": true,
+      ".write": "auth.uid === 'GThsya4eDAW4MCQT2k13UVHKDLb2'",
+      "jukebox": {
+        ".read": true,
+        ".write": "auth != null"
+      }
+    }
+  }
+}

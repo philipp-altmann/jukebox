@@ -1,0 +1,53 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="current-list">
+  <template>
+    <style>
+      :host {
+      }
+    </style>
+    <div></div>
+    <!--firebase-query
+      id="query"
+      app-name="notes"
+      path="/notes/[[uid]]"
+      data="{{data}}">
+    </firebase-query-->
+
+
+
+
+    <template is="dom-repeat" items="[[trackList]]" as="track">
+      <h1>[[track.trackId]]</h1>
+    </template>
+  </template>
+  <script>
+    Polymer({
+      is: 'current-list',
+      properties: {
+        /*user: {
+            type: Object,
+            observer: 'userChanged'
+        },*/
+        data: {
+          type: Object,
+          observer: 'dataChanged'
+        },
+        trackList: {
+            type: Array
+        }
+      },
+
+      partiesChanged: function (event) {
+        console.log(event);
+      },
+
+      dataChanged: function (newData, oldData) {
+        // do something when the query returns values
+      },
+      userChanged: function (user) {
+        console.log(user);
+      }
+    });
+  </script>
+</dom-module>

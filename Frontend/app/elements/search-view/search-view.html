@@ -1,0 +1,121 @@
+<link rel="import" href="../../bower_components/polymer/polymer.html">
+
+<dom-module id="search-view">
+  <template>
+    <style>
+      :host {
+        margin: 20px;
+      }
+    </style>
+    <firebase-query
+      id="query"
+      path="/users/[[user.uid]]/trackList"
+      data="{{trackList}}">
+    </firebase-query>
+
+    <firebase-query
+      id="party"
+      path="/parties"
+      data="{{parties}}">
+    </firebase-query>
+
+    <template is="dom-repeat" items="[[parties]]" as="party">
+      <h1>[[party.name]]</h1>
+    </template>
+
+    <paper-button on-tap="testPush">Test Push</paper-button>
+    <paper-button on-tap="setUser">Set User</paper-button>
+    <paper-button on-tap="sendMail">Send Mailr</paper-button>
+    <itunes-search on-received-results="handleSearchResults" user="{{user}}" loading="{{loading}}"></itunes-search>
+    <template is="dom-if" if="[[loading]]">
+      <paper-spinner active suffix></paper-spinner>
+    </template>
+
+    <template is="dom-if" if="[[!loading]]">
+      <search-list search-results="[[searchResults]]" loading="{{loading}}" on-add-to-list="addToList"></search-list>
+    </template>
+    <!--TODO Preview Player at Bottom-->
+  </template>
+  <script>
+    Polymer({
+      is: 'search-view',
+      properties: {
+        user: {
+          type: Object,
+          observer: 'userChanged'
+        },
+        searchResults: {
+          type: Array
+        },
+
+        parties: {
+          type: Array,
+          observer: 'partiesChanged'
+        }
+      },
+
+      userChanged: function (user) {
+        console.log(user);
+      },
+      handleSearchResults: function (event) {
+        this.set('searchResults', event.detail.results);
+      },
+
+      addToList: function (event) {
+        var addItem = event.detail;
+        console.log(addItem);
+        var itemIndex = this.trackList.map(function (e) {
+          return e.trackId;
+        }).indexOf(addItem.trackId);
+
+        if (itemIndex === -1) {
+          this.$.query.ref.push({
+              trackId: addItem.trackId,
+              userId: "TODO",
+              votes: 0,
+              info: {
+                name: addItem.trackName,
+                artist: addItem.artistName,
+                album: addItem.collectionName,
+                cover: addItem.artworkUrl100
+              }
+            });
+
+        } else {
+          updatedVotes = this.get('trackList.' + itemIndex + '.votes') + 1;
+          this.set('trackList.' + itemIndex + '.votes', updatedVotes);
+        }
+        console.log(this.trackList);
+        //this.fire('update-track-list', this.trackList);
+      },
+
+      testPush: function () {
+          var today = new Date();
+          var msTest = today.getMilliseconds()
+        this.$.party.ref.push({
+          name: "Test Party",
+          host: "Philipp",
+          date: msTest
+      });
+        console.log(this.parties);
+      },
+      setUser: function () {
+        this.user.updateProfile({
+          displayName: "Philipp"
+        }).then(function() {
+          console.log("Update successful.");
+        }, function(error) {
+          console.log("An error happened.");
+        });
+      },
+      sendMail: function () {
+        this.user.sendEmailVerification().then(function() {
+          console.log('Email sent.');
+        }, function(error) {
+          console.log('An error happened.');
+        });
+      }
+
+    });
+  </script>
+</dom-module>
