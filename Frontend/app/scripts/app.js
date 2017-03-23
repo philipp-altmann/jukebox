@@ -80,6 +80,6 @@ subject to an additional IP rights grant found at http://polymer.github.io/PATEN
 
   window.addEventListener('SELECTED_PARTY_CHANGED', function (event) {
     app.selectedParty = event.detail;
-  })
+  });
 
 })(document);

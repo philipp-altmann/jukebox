@@ -3,69 +3,164 @@
 <dom-module id="party-selector">
   <template>
     <style>
-      :host {
+
+      paper-dialog {
+        width: 320px;
+        padding: 10px;
       }
+
     </style>
-    <!--Dropdown Menu \w parties-->
-    <!--Domif Admin -> add button-->
-    <!--Default: Latest Partys-->
 
     <!--FireBase Request Fetching all Parties-->
-    <firebase-query
+    <firebase-document
       id="party"
       path="/parties"
       data="{{parties}}"
-      on-data-changed="dataChanged"
       order-by-child="date">
-    </firebase-query>
+    </firebase-document>
 
-    <paper-listbox class="dropdown-content" selected="1">
-      <paper-item>allosaurus</paper-item>
-      <paper-item>brontosaurus</paper-item>
-      <paper-item>carcharodontosaurus</paper-item>
-      <paper-item>diplodocus</paper-item>
-    </paper-listbox>
+    <!--Admin Popup for adding a new party-->
+    <template is="dom-if" if="user.idAdmin">
+      <paper-dialog id="add" on-iron-overlay-closed="reactToCreate">
+        <div id="dialog-header">
+          <h2>Create a new Party</h2>
+          <p>Please enter a funky name and the date of celebration</p>
+          <paper-input label="Name" value="{{addObject.name}}"></paper-input>
+          <vaadin-date-picker label="Date" value="{{addObject.date}}"></vaadin-date-picker>
+        </div>
+        <div class="buttons">
+          <paper-button dialog-dismiss>Cancel</paper-button>
+          <paper-button dialog-confirm autofocus>Add</paper-button>
+        </div>
+      </paper-dialog>
+    </template>
+
+    <!--Dropdown Menu for selecting a party-->
     <paper-dropdown-menu label="Parties" selected="0">
-      <paper-listbox id="dropdown" class="dropdown-content" attr-for-selected="partyid" selected="{{selectedParty}}" on-iron-items-changed="itemsChanged">
-        <template is="dom-repeat" items="[[parties]]" as="party">
-          <paper-item partyid$="[[party.$key]]">[[party.name]]</paper-item>
+      <paper-listbox id="dropdown" class="dropdown-content" attr-for-selected="partyid" selected="{{selectedParty}}"
+                     on-iron-items-changed="itemsChanged">
+        <template is="dom-repeat" items="[[convertObject(parties)]]" as="party">
+          <paper-item partyid$="[[party.key]]">
+            [[party.value.name]] ([[getDate(party.value.date)]])
+            <dom-if if="user.isAdmin">
+              <paper-icon-button icon="delete" on-tap="deleteParty"></paper-icon-button>
+            </dom-if>
+          </paper-item>
         </template>
       </paper-listbox>
     </paper-dropdown-menu>
+
+    <!--Add Button for admin-->
+    <template is="dom-if" if="user.idAdmin">
+      <paper-icon-button icon="icons:add-circle-outline" on-tap="openAddPopup"></paper-icon-button>
+    </template>
   </template>
   <script>
     Polymer({
       is: 'party-selector',
       properties: {
-        selectedPartyId: {
-          type: String
-        },
         parties: {
-          type: Object,
-          observer: 'partiesChanged'
+          type: Object
         },
         selectedParty: {
-          type: Object,
+          type: String,
           observer: 'selectionChanged'
+        },
+        addObject: {
+          type: Object,
+          value: {}
         }
       },
-      ready: function () {
 
-      },
+      /**
+       * Callback on Party selection changed, firing SELECTED_PARTY_CHANGED event
+       */
       selectionChanged: function (partyId) {
-        this.set('selectedPartyId', partyId);
-        console.log(this.selectedPartyId);
         this.fire('SELECTED_PARTY_CHANGED', partyId)
       },
-      dataChanged: function (event) {
-        console.log(this.$.dropdown.items);
 
+      /**
+       * Callback on dropdown items changed, setting selected to first item
+       */
+      itemsChanged: function () {
+        this.$.dropdown.selectIndex(0);
       },
-      itemsChanged: function (event) {
-        var last = event.detail.addedNodes.length/3 -1;
-        if (this.selectedPartyId === undefined) {
-          this.$.dropdown.selectIndex(0);
+
+      /**
+       * Helper function converting party object to party array
+       * and sorting Array by Date
+       * @param partiesObject {Object}
+       * @return partiesArray {Array}
+       */
+      convertObject: function (partiesObject) {
+        //Convert object to array
+        var partiesArray = Object.keys(partiesObject).map(function (key) {
+          return {
+            key: key,
+            value: partiesObject[key]
+          }
+        });
+        // Sorty Array by date
+        partiesArray.sort(function (a, b) {
+          return (
+            new Date(a.value.date) > new Date(b.value.date)
+          ) ? 1 : ((
+            new Date(b.value.date) > new Date(a.value.date)
+          ) ? -1 : 0);
+        });
+
+        return partiesArray;
+      },
+
+      /**
+       * Callback on-tap add, opening add popup
+       */
+      openAddPopup: function () {
+        this.$.add.open();
+      },
+
+      /**
+       * Callback on Create Popup closed, adding new party to firebase
+       * @param event iron-overlay-closed event
+       */
+      reactToCreate: function (event) {
+        //Check if event for add dialog
+        if (event.target.id === 'add') {
+          //Check if Popup Approved or Canceled
+          if (event.detail.confirmed) {
+            var keys = Object.keys(this.addObject);
+            if (keys.length != 0) {
+              this.$.party.ref.push({
+                name: this.addObject.name,
+                host: this.user.displayName,
+                date: this.addObject.date
+              });
+            }
+          }
+
+          //Reset Attributes
+          this.set('addObject', {});
         }
+      },
+
+      /**
+       * Helper function transforming a date to local format
+       * @param strDate {string} date to transform
+       * @return {string} transformed date
+       */
+      getDate: function (strDate) {
+        var d = new Date(strDate);
+        return d.toLocaleDateString()
+      },
+
+      /**
+       * Callback on-tap delete, deletes party from firebase
+       * @param event tap-event
+       */
+      deleteParty: function (event) {
+        // Get key of item to delete
+        var key = this.convertObject(this.parties)[event.model.index].key;
+        this.$.party.ref.child(key).remove();
       }
     });
   </script>

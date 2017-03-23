@@ -11,7 +11,9 @@
     "polymerfire": "firebase/polymerfire#^0.10.3",
     "iron-ajax": "PolymerElements/iron-ajax#^1.4.3",
     "paper-item": "PolymerElements/paper-item#^1.2.1",
-    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.5.0"
+    "paper-dropdown-menu": "PolymerElements/paper-dropdown-menu#^1.5.0",
+    "vaadin-date-picker": "vaadin/vaadin-date-picker#^1.2.1",
+    "paper-dialog": "PolymerElements/paper-dialog#^1.1.0"
   },
   "devDependencies": {
     "web-component-tester": "^4.0.0"
